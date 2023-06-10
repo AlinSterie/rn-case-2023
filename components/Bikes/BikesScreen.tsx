@@ -9,6 +9,7 @@ import {
   View,
   StatusBar,
   Platform,
+  Button,
 } from "react-native";
 import Bike from "./Bike";
 import * as Clipboard from "expo-clipboard";
@@ -25,36 +26,36 @@ interface BikeData {
 const BikesScreen = () => {
   const [bikesData, setBikesData] = useState<BikeData[]>([]);
 
+  const refresh = async () => {
+    try {
+      const response1 = await fetch(
+        "https://data.stad.gent/api/records/1.0/search/?dataset=blue-bike-deelfietsen-gent-dampoort&q=&facet=name"
+      );
+      const data1 = await response1.json();
+      const bikesApi1 = data1.records || [];
+
+      const response2 = await fetch(
+        "https://data.stad.gent/api/records/1.0/search/?dataset=blue-bike-deelfietsen-gent-sint-pieters-m-hendrikaplein&q=&facet=name"
+      );
+      const data2 = await response2.json();
+      const bikesApi2 = data2.records || [];
+
+      const response3 = await fetch(
+        "https://data.stad.gent/api/records/1.0/search/?dataset=blue-bike-deelfietsen-gent-sint-pieters-st-denijslaan&q=&facet=name"
+      );
+      const data3 = await response3.json();
+      const bikesApi3 = data3.records || [];
+
+      const combinedData = [...bikesApi1, ...bikesApi2, ...bikesApi3];
+
+      setBikesData(combinedData);
+    } catch (error) {
+      console.error("Error fetching bike data:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response1 = await fetch(
-          "https://data.stad.gent/api/records/1.0/search/?dataset=blue-bike-deelfietsen-gent-dampoort&q=&facet=name"
-        );
-        const data1 = await response1.json();
-        const bikesApi1 = data1.records || [];
-
-        const response2 = await fetch(
-          "https://data.stad.gent/api/records/1.0/search/?dataset=blue-bike-deelfietsen-gent-sint-pieters-m-hendrikaplein&q=&facet=name"
-        );
-        const data2 = await response2.json();
-        const bikesApi2 = data2.records || [];
-
-        const response3 = await fetch(
-          "https://data.stad.gent/api/records/1.0/search/?dataset=blue-bike-deelfietsen-gent-sint-pieters-st-denijslaan&q=&facet=name"
-        );
-        const data3 = await response3.json();
-        const bikesApi3 = data3.records || [];
-
-        const combinedData = [...bikesApi1, ...bikesApi2, ...bikesApi3];
-
-        setBikesData(combinedData);
-      } catch (error) {
-        console.error("Error fetching bike data:", error);
-      }
-    };
-
-    fetchData();
+    refresh();
   }, []);
 
   const copyToClipboard = async (text: string) => {
@@ -91,6 +92,7 @@ const BikesScreen = () => {
         )}
         keyExtractor={(bike) => bike.recordid}
       />
+      <Button title="Refresh" color="#fff" onPress={() => refresh()} />
     </SafeAreaView>
   );
 };

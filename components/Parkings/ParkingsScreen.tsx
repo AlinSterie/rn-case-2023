@@ -7,6 +7,7 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
+  Button,
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,22 +25,22 @@ interface ParkingData {
 const ParkingsScreen = () => {
   const [parkingData, setParkingData] = useState<ParkingData[]>([]);
 
+  const refresh = async () => {
+    try {
+      const response = await fetch(
+        "https://data.stad.gent/api/records/1.0/search/?dataset=bezetting-parkeergarages-real-time&q=&facet=name&facet=lastupdate&facet=description&facet=categorie"
+      );
+      const data = await response.json();
+      const parkingsApi = data.records || [];
+
+      setParkingData(parkingsApi);
+    } catch (error) {
+      console.error("Error fetching parking data:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          "https://data.stad.gent/api/records/1.0/search/?dataset=bezetting-parkeergarages-real-time&q=&facet=name&facet=lastupdate&facet=description&facet=categorie"
-        );
-        const data = await response.json();
-        const parkingsApi = data.records || [];
-
-        setParkingData(parkingsApi);
-      } catch (error) {
-        console.error("Error fetching parking data:", error);
-      }
-    };
-
-    fetchData();
+    refresh();
   }, []);
 
   const filteredParkings = parkingData
@@ -88,6 +89,7 @@ const ParkingsScreen = () => {
           </TouchableOpacity>
         )}
       />
+      <Button title="Refresh" color="#fff" onPress={() => refresh()} />
     </SafeAreaView>
   );
 };
